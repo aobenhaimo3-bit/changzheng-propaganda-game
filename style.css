@@ -76,6 +76,8 @@ h1 {
 
 .intro-panel,
 .knowledge-panel,
+.museum-panel,
+.history-panel,
 .campaign-map,
 .wizard-card,
 .battle-report,
@@ -88,12 +90,16 @@ h1 {
 
 .intro-panel,
 .knowledge-panel,
+.museum-panel,
+.history-panel,
 .battle-report {
   padding: 24px;
 }
 
 .intro-panel h2,
 .knowledge-panel h2,
+.museum-panel h2,
+.history-panel h2,
 .wizard-card h2,
 .api-modal h2 {
   margin: 0;
@@ -104,10 +110,364 @@ h1 {
 
 .intro-panel p,
 .knowledge-panel p,
+.museum-panel p,
+.history-panel p,
 .step-desc,
 .api-modal p {
   margin: 10px 0 0;
   color: var(--muted);
+}
+
+.resource-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.resource-button {
+  border: 1px solid #d8bd8b;
+  border-radius: 999px;
+  padding: 9px 14px;
+  color: var(--red-deep);
+  background: #fffdf7;
+  cursor: pointer;
+  font-weight: 900;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.resource-button:hover {
+  transform: translateY(-1px);
+  background: #fff1cf;
+  box-shadow: 0 8px 18px rgba(76, 29, 29, 0.1);
+}
+
+.museum-panel,
+.history-panel {
+  position: fixed;
+  inset: 7vh max(18px, calc((100vw - 980px) / 2));
+  z-index: 18;
+  overflow: auto;
+  margin: 20px 0;
+  max-height: 86vh;
+  background:
+    linear-gradient(180deg, rgba(255, 242, 204, 0.56), rgba(255, 250, 240, 0.98)),
+    var(--paper);
+}
+
+.museum-panel::before,
+.history-panel::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(37, 27, 24, 0.42);
+}
+
+.panel-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d8bd8b;
+  border-radius: 50%;
+  color: var(--red-deep);
+  background: #fff9ea;
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.section-heading {
+  max-width: 860px;
+}
+
+.section-heading h2 {
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.museum-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.beijing-map {
+  position: relative;
+  min-height: 280px;
+  overflow: hidden;
+  border: 1px solid #e5d0a8;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 66% 34%, rgba(189, 27, 27, 0.12), transparent 18%),
+    radial-gradient(circle at 40% 58%, rgba(200, 146, 50, 0.22), transparent 22%),
+    linear-gradient(135deg, #fffdf7, #fff1cf);
+}
+
+.beijing-map::before {
+  content: "BEIJING";
+  position: absolute;
+  right: 18px;
+  bottom: 8px;
+  color: rgba(111, 16, 16, 0.1);
+  font-size: 3.2rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.map-road {
+  position: absolute;
+  background: rgba(111, 16, 16, 0.18);
+}
+
+.map-road.horizontal {
+  left: 8%;
+  right: 8%;
+  top: 56%;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.map-road.vertical {
+  top: 10%;
+  bottom: 12%;
+  left: 56%;
+  width: 8px;
+  border-radius: 999px;
+}
+
+.map-pin {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border: 2px solid #fff5dc;
+  border-radius: 50%;
+  color: var(--white);
+  background: radial-gradient(circle at 35% 30%, #d94a35, var(--red-deep));
+  box-shadow: 0 14px 26px rgba(76, 29, 29, 0.24);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 900;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.map-pin:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 34px rgba(76, 29, 29, 0.3);
+}
+
+.pin-party {
+  left: 58%;
+  top: 18%;
+}
+
+.pin-nmc {
+  left: 48%;
+  top: 50%;
+}
+
+.pin-military {
+  left: 18%;
+  top: 52%;
+}
+
+.pin-red {
+  left: 63%;
+  top: 42%;
+}
+
+.map-label {
+  position: absolute;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.label-north {
+  left: 58%;
+  top: 8%;
+}
+
+.label-center {
+  left: 48%;
+  top: 72%;
+}
+
+.label-west {
+  left: 12%;
+  top: 76%;
+}
+
+.museum-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.museum-card {
+  border: 1px solid #e5d0a8;
+  border-radius: 8px;
+  padding: 15px;
+  background: #fffdf7;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.museum-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(76, 29, 29, 0.08);
+}
+
+.museum-card h3 {
+  margin: 0 0 7px;
+  color: var(--red-deep);
+  font-size: 1.02rem;
+}
+
+.museum-card p {
+  margin: 0 0 10px;
+  font-size: 0.94rem;
+}
+
+.museum-card a {
+  color: var(--red-main);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.museum-card a:hover {
+  text-decoration: underline;
+}
+
+.history-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.history-tab {
+  border: 1px solid #d8bd8b;
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: var(--red-deep);
+  background: #fffdf7;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.history-tab.active {
+  color: var(--white);
+  border-color: var(--red-deep);
+  background: linear-gradient(180deg, var(--red-main), var(--red-deep));
+}
+
+.history-detail {
+  margin-top: 16px;
+  border: 1px solid #e5d0a8;
+  border-radius: 8px;
+  padding: 18px;
+  background: #fffdf7;
+}
+
+.history-era {
+  margin: 0 0 4px;
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.history-detail h3 {
+  margin: 0;
+  color: var(--red-deep);
+  font-size: 1.25rem;
+}
+
+.history-detail ul {
+  margin: 12px 0 0;
+  padding-left: 20px;
+}
+
+.history-note {
+  position: relative;
+  margin-top: 14px;
+  border: 1px solid #e5d0a8;
+  border-left: 6px solid var(--gold);
+  border-radius: 8px;
+  padding: 14px 16px 14px 54px;
+  color: var(--muted);
+  background:
+    radial-gradient(circle at 24px 24px, rgba(200, 146, 50, 0.28), transparent 22px),
+    #fff5dc;
+}
+
+.history-note::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 20px;
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px rgba(200, 146, 50, 0.12);
+}
+
+.history-note span {
+  display: inline-flex;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: var(--white);
+  background: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.history-note strong {
+  display: block;
+  color: var(--red-deep);
+  font-size: 1.02rem;
+}
+
+.history-note p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+/* Legacy timeline styles kept harmless if older markup appears in cached pages. */
+.history-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.history-timeline article {
+  border-top: 4px solid var(--gold);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fffdf7;
+}
+
+.history-timeline span {
+  color: var(--gold);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.history-timeline h3 {
+  margin: 5px 0;
+  color: var(--red-deep);
+  font-size: 1.02rem;
+}
+
+.history-timeline p {
+  margin: 0;
+  font-size: 0.94rem;
 }
 
 .wizard-screen {
@@ -116,6 +476,10 @@ h1 {
   gap: 20px;
   align-items: start;
   margin: 20px 0;
+}
+
+.wizard-screen.step-enter .wizard-card {
+  animation: stepFloatIn 360ms ease both;
 }
 
 .campaign-map {
@@ -170,6 +534,25 @@ h1 {
 
 .route-item.active {
   color: var(--red-deep);
+}
+
+.host-panel {
+  margin-top: 18px;
+  border-left: 4px solid var(--gold);
+  padding: 12px 14px;
+  background: #fff5dc;
+}
+
+.host-panel h3 {
+  margin: 0 0 6px;
+  color: var(--red-deep);
+  font-size: 1rem;
+}
+
+.host-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 .wizard-card {
@@ -309,6 +692,7 @@ body[data-stage="tone"] .visual-smoke {
 
 .wizard-card h2,
 .step-desc,
+.selection-recap,
 .option-grid,
 .wizard-actions {
   margin-left: 24px;
@@ -320,6 +704,28 @@ body[data-stage="tone"] .visual-smoke {
   font-size: clamp(1.55rem, 3vw, 2.2rem);
 }
 
+.selection-recap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.recap-chip {
+  border: 1px solid #e5d0a8;
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: var(--red-deep);
+  background: #fffdf7;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.recap-chip.empty {
+  color: var(--muted);
+  background: #fff9ea;
+}
+
 .option-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -328,6 +734,8 @@ body[data-stage="tone"] .visual-smoke {
 }
 
 .option-button {
+  position: relative;
+  overflow: hidden;
   min-height: 72px;
   border: 1px solid #d8bd8b;
   border-radius: 8px;
@@ -339,10 +747,24 @@ body[data-stage="tone"] .visual-smoke {
   transition: background 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 
+.option-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.32) 44%, transparent 58%);
+  transform: translateX(-120%);
+  transition: transform 520ms ease;
+  pointer-events: none;
+}
+
 .option-button:hover {
   border-color: var(--gold);
   background: #fff6df;
   transform: translateY(-1px);
+}
+
+.option-button:hover::after {
+  transform: translateX(120%);
 }
 
 .option-button.selected {
@@ -352,9 +774,18 @@ body[data-stage="tone"] .visual-smoke {
   box-shadow: 0 8px 18px rgba(127, 17, 17, 0.24);
 }
 
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transform: scale(0);
+  pointer-events: none;
+  animation: rippleWave 520ms ease-out;
+}
+
 .wizard-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   padding: 20px 0 24px;
 }
@@ -408,6 +839,12 @@ body[data-stage="tone"] .visual-smoke {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .battle-report {
@@ -535,7 +972,7 @@ body[data-stage="tone"] .visual-smoke {
 
 .brief-report-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-top: 14px;
 }
@@ -544,6 +981,12 @@ body[data-stage="tone"] .visual-smoke {
   border-left: 4px solid var(--gold);
   padding: 12px 14px;
   background: #fff5dc;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.report-block:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(76, 29, 29, 0.08);
 }
 
 .report-block h3 {
@@ -554,6 +997,48 @@ body[data-stage="tone"] .visual-smoke {
 
 .report-block p {
   margin: 0;
+}
+
+.best-answer-box {
+  margin-top: 16px;
+}
+
+.best-answer-detail {
+  margin-top: 12px;
+  border: 1px solid #e5d0a8;
+  border-left: 6px solid var(--red-main);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #fffdf7;
+  animation: stepFloatIn 220ms ease both;
+}
+
+.best-answer-detail h3 {
+  margin: 0 0 10px;
+  color: var(--red-deep);
+  font-size: 1.05rem;
+}
+
+.best-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.best-answer-grid span {
+  border: 1px solid #e5d0a8;
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: var(--red-deep);
+  background: #fff5dc;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.best-answer-detail p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .modal-mask {
@@ -644,8 +1129,17 @@ body[data-stage="tone"] .visual-smoke {
     grid-template-columns: 1fr;
   }
 
+  .museum-layout,
+  .history-timeline {
+    grid-template-columns: 1fr;
+  }
+
   .brief-report-grid {
     grid-template-columns: 1fr;
+  }
+
+  .best-answer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -660,6 +1154,8 @@ body[data-stage="tone"] .visual-smoke {
 
   .intro-panel,
   .knowledge-panel,
+  .museum-panel,
+  .history-panel,
   .campaign-map,
   .battle-report,
   .api-modal {
@@ -668,6 +1164,7 @@ body[data-stage="tone"] .visual-smoke {
 
   .wizard-card h2,
   .step-desc,
+  .selection-recap,
   .option-grid,
   .wizard-actions {
     margin-left: 18px;
@@ -681,22 +1178,62 @@ body[data-stage="tone"] .visual-smoke {
 
   .option-grid,
   .dimension-score-grid,
+  .museum-list,
   .route-list {
     grid-template-columns: 1fr;
+  }
+
+  .beijing-map {
+    min-height: 250px;
+  }
+
+  .map-pin {
+    width: 58px;
+    height: 58px;
+    font-size: 0.82rem;
+  }
+
+  .best-answer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .museum-panel,
+  .history-panel {
+    inset: 4vh 12px;
   }
 
   .option-button {
     min-height: 58px;
   }
 
-  .wizard-actions,
   .result-topline {
     display: grid;
   }
 
+  .result-actions {
+    display: grid;
+  }
+
   .small-button,
-  .primary-button,
-  .secondary-button {
+  .result-topline .secondary-button {
     width: 100%;
+  }
+}
+
+@keyframes rippleWave {
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes stepFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

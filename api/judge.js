@@ -25,7 +25,7 @@ export default async function handler(request, response) {
 四个维度分数相加必须等于 totalScore，每项 0-25 分。四个维度文字只能使用：高度契合、基本契合、部分偏离、明显偏离。
 
 JSON 字段：
-resultLevel, resultTitle, success, statusText, resultSummary, totalScore, dimensionScores, dimensionJudgement, storyFeedback, historicalExplanation, improvement, aiAdvice
+resultLevel, resultTitle, success, statusText, resultSummary, totalScore, dimensionScores, dimensionJudgement, storyFeedback, historicalExplanation, gradingBasis, improvement, aiAdvice
 
 玩家选择：
 长征情境：${selection.contextLabel}

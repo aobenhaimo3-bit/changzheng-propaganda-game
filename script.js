@@ -12,6 +12,45 @@ const media = ["墙体标语", "短口号", "宣传漫画", "正式布告", "童
 const contents = ["欠饷与苛捐杂税", "优待俘虏", "穷人不打穷人", "揭露军阀压迫", "民族平等与纪律严明", "红军是工农自己的队伍", "反对官长腐败", "长征理想与革命信念"];
 const tones = ["通俗亲切", "激烈号召", "讽刺揭露", "正式庄重", "安抚承诺", "鼓舞动员"];
 
+const contextChoices = {
+  xiangjiang: {
+    target: ["红军内部战士", "沿途贫苦群众", "伤病疲惫的红军战士", "国民党底层士兵", "普通群众"],
+    media: ["短口号", "墙体标语", "童谣/歌谣", "战地动员词", "传单"],
+    content: ["长征理想与革命信念", "红军是工农自己的队伍", "红军纪律严明", "保存力量继续前进", "穷人不打穷人"],
+    tone: ["鼓舞动员", "安抚承诺", "通俗亲切", "坚定沉着", "正式庄重"]
+  },
+  zunyi: {
+    target: ["普通群众", "红军内部战士", "国民党底层士兵", "地方军阀士兵", "青年学生"],
+    media: ["墙体标语", "短口号", "传单", "正式布告", "群众宣讲"],
+    content: ["长征理想与革命信念", "红军是工农自己的队伍", "穷人不打穷人", "优待俘虏", "革命转折与胜利信心"],
+    tone: ["鼓舞动员", "激烈号召", "通俗亲切", "正式庄重", "坚定沉着"]
+  },
+  warlordArea: {
+    target: ["地方军阀士兵", "受军阀压迫的群众", "普通群众", "国民党底层士兵", "敌军军官"],
+    media: ["宣传漫画", "墙体标语", "短口号", "传单", "讽刺漫画"],
+    content: ["揭露军阀压迫", "欠饷与苛捐杂税", "反对官长腐败", "穷人不打穷人", "优待俘虏"],
+    tone: ["讽刺揭露", "激烈号召", "通俗亲切", "安抚承诺", "尖锐批判"]
+  },
+  arrearsSoldiers: {
+    target: ["国民党底层士兵", "被强征入伍的士兵", "俘虏士兵", "地方军阀士兵", "敌军军官"],
+    media: ["短口号", "墙体标语", "传单", "宣传漫画", "劝降信"],
+    content: ["欠饷与苛捐杂税", "优待俘虏", "穷人不打穷人", "反对官长腐败", "红军是工农自己的队伍"],
+    tone: ["通俗亲切", "安抚承诺", "讽刺揭露", "激烈号召", "设身处地"]
+  },
+  minorityArea: {
+    target: ["少数民族地区群众", "地方头人和乡老", "普通群众", "青年群众", "红军内部战士"],
+    media: ["正式布告", "墙体标语", "短口号", "群众宣讲", "童谣/歌谣"],
+    content: ["民族平等与纪律严明", "红军纪律严明", "尊重风俗与保护群众", "红军是工农自己的队伍", "长征理想与革命信念"],
+    tone: ["安抚承诺", "正式庄重", "通俗亲切", "耐心解释", "鼓舞动员"]
+  },
+  lowLiteracy: {
+    target: ["普通群众", "国民党底层士兵", "儿童与青年", "少数民族地区群众", "地方军阀士兵"],
+    media: ["宣传漫画", "童谣/歌谣", "短口号", "墙体标语", "图像化传单"],
+    content: ["穷人不打穷人", "优待俘虏", "红军是工农自己的队伍", "民族平等与纪律严明", "欠饷与苛捐杂税"],
+    tone: ["通俗亲切", "鼓舞动员", "安抚承诺", "朗朗上口", "激烈号召"]
+  }
+};
+
 const steps = [
   {
     key: "context",
@@ -83,6 +122,7 @@ const state = {
 };
 
 let currentStep = 0;
+let shouldAnimateStep = false;
 
 const introPanel = document.querySelector("#introPanel");
 const knowledgePanel = document.querySelector("#knowledgePanel");
@@ -94,65 +134,169 @@ const stepNumber = document.querySelector("#stepNumber");
 const nodeTag = document.querySelector("#nodeTag");
 const stepTitle = document.querySelector("#stepTitle");
 const stepDescription = document.querySelector("#stepDescription");
+const selectedSummary = document.querySelector("#selectedSummary");
 const stepOptions = document.querySelector("#stepOptions");
 const prevButton = document.querySelector("#prevButton");
 const nextButton = document.querySelector("#nextButton");
 const resultButton = document.querySelector("#resultButton");
 const backButton = document.querySelector("#backButton");
+const restartButton = document.querySelector("#restartButton");
 const apiModal = document.querySelector("#apiModal");
 const closeApiModal = document.querySelector("#closeApiModal");
 const apiKeyInput = document.querySelector("#deepseekApiKey");
 const aiStatus = document.querySelector("#aiStatus");
+const museumPanel = document.querySelector("#museumPanel");
+const historyPanel = document.querySelector("#historyPanel");
+const openMuseumMap = document.querySelector("#openMuseumMap");
+const openHistoryExplorer = document.querySelector("#openHistoryExplorer");
+const closeMuseumPanel = document.querySelector("#closeMuseumPanel");
+const closeHistoryPanel = document.querySelector("#closeHistoryPanel");
+const historyTabs = document.querySelector("#historyTabs");
+const historyDetail = document.querySelector("#historyDetail");
+const historyNote = document.querySelector("#historyNote");
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
 const DEEPSEEK_MODEL = "deepseek-chat";
 
+const historyPeriods = {
+  origin: {
+    era: "近代传播源头",
+    title: "从宣言、报刊到街头口号",
+    text: "近代中国政治传播常依靠报刊、宣言、传单和集会口号扩散。它们把复杂的政治主张压缩成可阅读、可呼喊、可复制的短句，让更多人能在学校、工厂、街道和乡村接触新思想。标语正是在这种公共传播环境中逐渐成为群众动员工具。",
+    points: ["关键词：报刊、宣言、传单、集会口号", "观察点：一句话如何压缩复杂政治主张"],
+    clueType: "文献入口",
+    clueTitle: "先看文字如何成为公共声音",
+    clueText: "可关注新文化运动纪念馆、早期党史文献、报刊影印件和宣言文本，观察政治语言如何从文章走向街头。"
+  },
+  soviet: {
+    era: "苏区与红军宣传",
+    title: "墙体标语成为基层政治传播工具",
+    text: "土地革命时期，红军和苏区宣传不只依靠正式文件，也依靠墙体标语、宣传画、布告和群众大会。墙体标语成本低、保存时间长、位置醒目，能把土地、阶级、纪律、参军、优待俘虏等信息直接放到乡村公共空间中。",
+    points: ["关键词：墙体、布告、土地、纪律", "观察点：标语为什么常写在路口、墙面和公共建筑上"],
+    clueType: "空间入口",
+    clueTitle: "看标语写在什么地方",
+    clueText: "可关注苏区旧址、墙体标语照片和根据地布告，比较祠堂、街口、民居墙面等公共空间的传播作用。"
+  },
+  march: {
+    era: "长征攻心战",
+    title: "宣传不是口号堆砌，而是对象匹配",
+    text: "长征途中，红军面对的对象很复杂：有欠饷士兵、地方军阀部队、少数民族地区群众、识字率较低的普通群众，也有红军内部战士。宣传要根据不同矛盾选择不同内容：对底层士兵讲欠饷、优待俘虏和穷人不打穷人；对群众强调纪律和平等；对内部强调理想信念。",
+    points: ["关键词：因敌制宜、因地制宜、攻心战", "观察点：同一句口号换了对象，效果可能完全不同"],
+    clueType: "对象入口",
+    clueTitle: "沿着受众去找答案",
+    clueText: "可结合军博革命战争陈列、长征沿线旧址和红军标语实例，重点看宣传对象是士兵、群众还是地方势力。"
+  },
+  visual: {
+    era: "多模态传播",
+    title: "标语、漫画、歌谣互相配合",
+    text: "标语适合凝练表达，漫画适合讽刺揭露，歌谣和短口号适合口耳相传，布告适合正式承诺。长征宣传的有效性，往往来自内容和媒介的配合，而不是单一形式的重复。",
+    points: ["关键词：标语、漫画、歌谣、布告、传单", "观察点：识字率较低时，图像和声音为什么更有效"],
+    clueType: "媒介入口",
+    clueTitle: "比较文字、图像和声音",
+    clueText: "可关注宣传漫画、传单版式、歌谣文本和展板图像，比较它们分别适合快速动员、讽刺揭露还是口耳相传。"
+  },
+  museum: {
+    era: "今天如何观看",
+    title: "把展柜当成一节传播学课堂",
+    text: "在博物馆看标语和宣传材料时，不只看文字内容，还要看它面对谁、写在哪里、用什么语气、和哪些文物并置。这样才能理解标语背后的政治动员、阶级共情、空间传播和视觉符号逻辑。",
+    points: ["关键词：对象、空间、语气、媒介", "观察点：展陈如何把历史现场重新组织给今天的观众"],
+    clueType: "观展入口",
+    clueTitle: "把展柜当作传播现场",
+    clueText: "可去中国共产党历史展览馆、国博“复兴之路”、军博等展馆，记录一条标语的对象、语气、媒介和展陈位置。"
+  }
+};
+
+const bestAnswerGuide = {
+  xiangjiang: {
+    target: "红军内部战士",
+    media: "战地动员词",
+    content: "保存力量继续前进",
+    tone: "鼓舞动员",
+    why: "湘江战役后队伍损失巨大，核心任务是稳住军心、保存力量并重建信念。面向红军内部战士，用战地动员词表达继续前进的必要性，最能回应当时的心理压力和组织需求。"
+  },
+  zunyi: {
+    target: "红军内部战士",
+    media: "短口号",
+    content: "革命转折与胜利信心",
+    tone: "坚定沉着",
+    why: "遵义会议后，宣传重点是把战略转折转化为队伍信心。短口号便于传播和记忆，配合坚定沉着的语气，可以把路线调整解释为继续前进的政治力量。"
+  },
+  warlordArea: {
+    target: "地方军阀士兵",
+    media: "讽刺漫画",
+    content: "揭露军阀压迫",
+    tone: "讽刺揭露",
+    why: "面对地方军阀部队，最有效的是揭开士兵与军阀官长之间的利益矛盾。讽刺漫画直观、冲击力强，能把压迫关系变成容易理解的视觉信息。"
+  },
+  arrearsSoldiers: {
+    target: "国民党底层士兵",
+    media: "传单",
+    content: "优待俘虏",
+    tone: "安抚承诺",
+    why: "欠饷和受压迫的底层士兵最关心出路和安全。传单可以具体说明政策，优待俘虏与安抚承诺能降低恐惧，增强动摇和转向的可能。"
+  },
+  minorityArea: {
+    target: "少数民族地区群众",
+    media: "正式布告",
+    content: "民族平等与纪律严明",
+    tone: "正式庄重",
+    why: "经过少数民族聚居地区时，首要任务是建立信任。正式布告能表达明确承诺，民族平等与纪律严明回应群众关切，庄重语气有助于减少误解。"
+  },
+  lowLiteracy: {
+    target: "普通群众",
+    media: "宣传漫画",
+    content: "穷人不打穷人",
+    tone: "通俗亲切",
+    why: "面对识字率较低的群众，图像比长篇文字更容易理解。宣传漫画配合通俗亲切的阶级共情表达，能降低理解门槛并便于口耳相传。"
+  }
+};
+
 const ruleProfiles = {
   xiangjiang: {
-    target: { best: ["红军内部战士", "普通群众"], good: ["国民党底层士兵"] },
-    content: { best: ["长征理想与革命信念", "红军是工农自己的队伍"], good: ["穷人不打穷人", "民族平等与纪律严明"] },
-    media: { best: ["短口号", "墙体标语", "童谣/歌谣"], good: ["传单", "正式布告"] },
-    tone: { best: ["鼓舞动员", "安抚承诺", "通俗亲切"], good: ["正式庄重", "激烈号召"] },
+    target: { best: ["红军内部战士", "伤病疲惫的红军战士", "沿途贫苦群众"], good: ["普通群众", "国民党底层士兵"] },
+    content: { best: ["长征理想与革命信念", "保存力量继续前进", "红军是工农自己的队伍"], good: ["红军纪律严明", "穷人不打穷人", "民族平等与纪律严明"] },
+    media: { best: ["短口号", "墙体标语", "童谣/歌谣", "战地动员词"], good: ["传单", "正式布告"] },
+    tone: { best: ["鼓舞动员", "安抚承诺", "坚定沉着"], good: ["通俗亲切", "正式庄重", "激烈号召"] },
     history: "湘江战役后，宣传的重要任务是稳定士气、恢复信心，并争取沿途群众理解。这说明红军宣传不仅面对敌军，也承担内部动员和群众沟通功能。",
     improvement: "可优先突出长征理想、革命信念与红军纪律，并使用鼓舞动员或安抚承诺的表达。"
   },
   zunyi: {
-    target: { best: ["普通群众", "红军内部战士", "国民党底层士兵"], good: ["地方军阀士兵"] },
-    content: { best: ["长征理想与革命信念", "红军是工农自己的队伍", "穷人不打穷人"], good: ["优待俘虏", "民族平等与纪律严明"] },
-    media: { best: ["墙体标语", "短口号", "传单"], good: ["正式布告", "童谣/歌谣"] },
-    tone: { best: ["鼓舞动员", "激烈号召", "通俗亲切"], good: ["正式庄重"] },
+    target: { best: ["普通群众", "红军内部战士", "青年学生"], good: ["国民党底层士兵", "地方军阀士兵"] },
+    content: { best: ["长征理想与革命信念", "革命转折与胜利信心", "红军是工农自己的队伍"], good: ["穷人不打穷人", "优待俘虏", "民族平等与纪律严明"] },
+    media: { best: ["墙体标语", "短口号", "传单", "群众宣讲"], good: ["正式布告", "童谣/歌谣"] },
+    tone: { best: ["鼓舞动员", "激烈号召", "坚定沉着"], good: ["通俗亲切", "正式庄重"] },
     history: "遵义会议后，红军需要把战略转折转化为更广泛的政治影响。标语、口号和传单可以让路线变化进入群众视野。",
     improvement: "可加强革命信念与工农立场表达，并选择更便于扩散的短口号、墙体标语或传单。"
   },
   warlordArea: {
-    target: { best: ["地方军阀士兵", "普通群众"], good: ["国民党底层士兵"] },
+    target: { best: ["地方军阀士兵", "受军阀压迫的群众"], good: ["普通群众", "国民党底层士兵"] },
     content: { best: ["揭露军阀压迫", "欠饷与苛捐杂税", "反对官长腐败"], good: ["穷人不打穷人", "优待俘虏"] },
-    media: { best: ["宣传漫画", "墙体标语", "短口号"], good: ["传单"] },
-    tone: { best: ["讽刺揭露", "激烈号召", "通俗亲切"], good: ["安抚承诺"] },
+    media: { best: ["宣传漫画", "讽刺漫画", "墙体标语", "短口号"], good: ["传单"] },
+    tone: { best: ["讽刺揭露", "尖锐批判", "激烈号召"], good: ["通俗亲切", "安抚承诺"] },
     history: "在地方军阀势力范围内，宣传需要抓住军阀压迫、欠饷和官长腐败等矛盾，促使士兵和群众重新理解红军立场。",
     improvement: "可把内容转向揭露军阀压迫或反对官长腐败，并用漫画、标语增强现场冲击力。"
   },
   arrearsSoldiers: {
-    target: { best: ["国民党底层士兵"], good: ["地方军阀士兵"] },
+    target: { best: ["国民党底层士兵", "被强征入伍的士兵", "俘虏士兵"], good: ["地方军阀士兵"] },
     content: { best: ["欠饷与苛捐杂税", "优待俘虏", "穷人不打穷人"], good: ["反对官长腐败", "红军是工农自己的队伍"] },
-    media: { best: ["短口号", "墙体标语", "传单"], good: ["宣传漫画"] },
-    tone: { best: ["通俗亲切", "安抚承诺", "讽刺揭露"], good: ["激烈号召"] },
+    media: { best: ["短口号", "墙体标语", "传单", "劝降信"], good: ["宣传漫画"] },
+    tone: { best: ["通俗亲切", "安抚承诺", "设身处地"], good: ["讽刺揭露", "激烈号召"] },
     history: "这一结果体现了红军宣传从经济痛点切入、建立阶级共情、进而瓦解敌军心理防线的攻心逻辑。",
     improvement: "如果进一步加入优待俘虏或穷人不打穷人的内容，攻心效果会更完整。"
   },
   minorityArea: {
-    target: { best: ["少数民族地区群众"], good: ["普通群众"] },
-    content: { best: ["民族平等与纪律严明"], good: ["红军是工农自己的队伍", "长征理想与革命信念"] },
-    media: { best: ["正式布告", "墙体标语", "短口号"], good: ["传单", "童谣/歌谣"] },
-    tone: { best: ["安抚承诺", "正式庄重", "通俗亲切"], good: ["鼓舞动员"] },
+    target: { best: ["少数民族地区群众", "地方头人和乡老"], good: ["普通群众", "青年群众", "红军内部战士"] },
+    content: { best: ["民族平等与纪律严明", "尊重风俗与保护群众", "红军纪律严明"], good: ["红军是工农自己的队伍", "长征理想与革命信念"] },
+    media: { best: ["正式布告", "墙体标语", "短口号", "群众宣讲"], good: ["传单", "童谣/歌谣"] },
+    tone: { best: ["安抚承诺", "正式庄重", "耐心解释"], good: ["通俗亲切", "鼓舞动员"] },
     history: "经过少数民族聚居地区时，宣传的关键是建立信任。纪律、平等和尊重能降低误解，使群众愿意听见红军主张。",
     improvement: "应优先强调民族平等与纪律严明，语气宜安抚、庄重，避免只做讽刺性揭露。"
   },
   lowLiteracy: {
-    target: { best: ["普通群众", "国民党底层士兵"], good: ["地方军阀士兵", "少数民族地区群众"] },
+    target: { best: ["普通群众", "国民党底层士兵", "儿童与青年"], good: ["地方军阀士兵", "少数民族地区群众"] },
     content: { best: ["穷人不打穷人", "优待俘虏", "红军是工农自己的队伍"], good: ["民族平等与纪律严明", "欠饷与苛捐杂税"] },
-    media: { best: ["宣传漫画", "童谣/歌谣", "短口号"], good: ["墙体标语"] },
-    tone: { best: ["通俗亲切", "鼓舞动员", "安抚承诺"], good: ["激烈号召"] },
+    media: { best: ["宣传漫画", "童谣/歌谣", "短口号", "图像化传单"], good: ["墙体标语"] },
+    tone: { best: ["通俗亲切", "朗朗上口", "鼓舞动员"], good: ["安抚承诺", "激烈号召"] },
     history: "这一情境体现了多模态宣传的价值：漫画、童谣和短口号能够降低识字门槛，让政治信息在口头和视觉传播中扩散。",
     improvement: "可选用宣传漫画、童谣/歌谣或短口号，并把内容压缩为更容易记忆的阶级共情表达。"
   }
@@ -172,15 +316,75 @@ function renderRoute() {
     .join("");
 }
 
+function getDisplayValue(key) {
+  if (key === "context") return getContextLabel(state.context);
+  return state[key] || "";
+}
+
+function renderSelectionSummary() {
+  const labels = {
+    context: "情境",
+    target: "对象",
+    media: "形式",
+    content: "内容",
+    tone: "语气"
+  };
+
+  selectedSummary.innerHTML = steps
+    .map((step) => {
+      const value = getDisplayValue(step.key);
+      const emptyClass = value ? "" : "empty";
+      return `<span class="recap-chip ${emptyClass}">${labels[step.key]}：${value || "待选"}</span>`;
+    })
+    .join("");
+}
+
+function getOptionsForStep(step) {
+  if (step.key === "context") return step.options;
+  const contextId = state.context;
+  return contextChoices[contextId]?.[step.key] || step.options;
+}
+
+function clearDependentChoices() {
+  state.target = null;
+  state.media = null;
+  state.content = null;
+  state.tone = null;
+}
+
+function createRipple(event) {
+  const button = event.currentTarget;
+  const rect = button.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const ripple = document.createElement("span");
+
+  ripple.className = "ripple";
+  ripple.style.width = `${size}px`;
+  ripple.style.height = `${size}px`;
+  ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+  ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+  button.appendChild(ripple);
+  ripple.addEventListener("animationend", () => ripple.remove());
+}
+
 function renderStep() {
   const step = steps[currentStep];
+  const options = getOptionsForStep(step);
   document.body.dataset.stage = step.key;
+
+  if (shouldAnimateStep) {
+    selectionScreen.classList.remove("step-enter");
+    void selectionScreen.offsetWidth;
+    selectionScreen.classList.add("step-enter");
+    shouldAnimateStep = false;
+  }
+
   stepNumber.textContent = step.number;
   nodeTag.textContent = step.tag;
   stepTitle.textContent = step.title;
   stepDescription.textContent = step.description;
 
-  stepOptions.innerHTML = step.options
+  stepOptions.innerHTML = options
     .map((option) => {
       const value = typeof option === "string" ? option : option.id;
       const label = typeof option === "string" ? option : option.label;
@@ -190,7 +394,11 @@ function renderStep() {
     .join("");
 
   stepOptions.querySelectorAll(".option-button").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      createRipple(event);
+      if (step.key === "context" && state.context !== button.dataset.value) {
+        clearDependentChoices();
+      }
       state[step.key] = button.dataset.value;
       renderStep();
     });
@@ -202,6 +410,7 @@ function renderStep() {
   nextButton.disabled = !state[step.key];
   resultButton.disabled = !state[step.key];
   renderRoute();
+  renderSelectionSummary();
 }
 
 function getContextLabel(contextId) {
@@ -310,6 +519,7 @@ function judgeLocally(selection) {
     dimensionJudgement: getDimensionJudgement(scores),
     storyFeedback: `战报判定：你选择以“${selection.media}”面向“${selection.target}”，重点表达“${selection.content}”，语气为“${selection.tone}”。这一部署在当前情境中的综合匹配度为 ${totalScore} 分。`,
     historicalExplanation: profile.history,
+    gradingBasis: "评分按四项各25分计算：对象、内容、媒介、语气是否贴合所选长征情境。",
     improvement: getWeakestTip(profile, scores),
     aiAdvice: "当前使用本地规则生成建议。如通过隐藏配置填入可用的 DeepSeek API Key，系统会尝试生成更具体的 AI 建议。"
   };
@@ -330,7 +540,7 @@ function buildAIPrompt(selection, localResult) {
 四个维度分数相加必须等于 totalScore，每项 0-25 分。四个维度文字只能使用：高度契合、基本契合、部分偏离、明显偏离。
 
 JSON 字段：
-resultLevel, resultTitle, success, statusText, resultSummary, totalScore, dimensionScores, dimensionJudgement, storyFeedback, historicalExplanation, improvement, aiAdvice
+resultLevel, resultTitle, success, statusText, resultSummary, totalScore, dimensionScores, dimensionJudgement, storyFeedback, historicalExplanation, gradingBasis, improvement, aiAdvice
 
 玩家选择：
 长征情境：${selection.contextLabel}
@@ -385,6 +595,7 @@ function normalizeAIResult(aiResult, localFallback) {
     },
     storyFeedback: aiResult.storyFeedback || localFallback.storyFeedback,
     historicalExplanation: aiResult.historicalExplanation || localFallback.historicalExplanation,
+    gradingBasis: aiResult.gradingBasis || localFallback.gradingBasis,
     improvement: aiResult.improvement || localFallback.improvement,
     aiAdvice: aiResult.aiAdvice || localFallback.aiAdvice
   };
@@ -465,6 +676,7 @@ function briefText(text, maxLength = 72) {
 
 function renderResult(result, selection) {
   const statusClass = result.success === true ? "" : result.success === false ? "fail" : "partial";
+  const bestAnswer = bestAnswerGuide[selection.context] || bestAnswerGuide.xiangjiang;
   const dimensionCards = Object.entries(dimensionNames)
     .map(([key, label]) => {
       const score = Math.max(0, Math.min(25, Number(result.dimensionScores[key] || 0)));
@@ -504,9 +716,27 @@ function renderResult(result, selection) {
     <div class="brief-report-grid">
       <div class="report-block"><h3>剧情反馈</h3><p>${briefText(result.storyFeedback, 76)}</p></div>
       <div class="report-block"><h3>历史解释</h3><p>${briefText(result.historicalExplanation, 72)}</p></div>
+      <div class="report-block"><h3>评分依据</h3><p>${briefText(result.gradingBasis, 64)}</p></div>
       <div class="report-block"><h3>建议</h3><p>${briefText(result.aiAdvice && !result.aiAdvice.includes("当前使用本地规则") ? result.aiAdvice : result.improvement, 72)}</p></div>
     </div>
+    <div class="best-answer-box">
+      <button class="resource-button" id="toggleBestAnswer" type="button">查看最适配选择</button>
+      <div class="best-answer-detail hidden" id="bestAnswerDetail">
+        <h3>满分参考答案</h3>
+        <div class="best-answer-grid">
+          <span>对象：${bestAnswer.target}</span>
+          <span>形式：${bestAnswer.media}</span>
+          <span>内容：${bestAnswer.content}</span>
+          <span>语气：${bestAnswer.tone}</span>
+        </div>
+        <p>${bestAnswer.why}</p>
+      </div>
+    </div>
   `;
+
+  document.querySelector("#toggleBestAnswer").addEventListener("click", () => {
+    document.querySelector("#bestAnswerDetail").classList.toggle("hidden");
+  });
 }
 
 function showResultScreen() {
@@ -523,6 +753,16 @@ function showSelectionScreen() {
   knowledgePanel.classList.remove("hidden");
   resultScreen.classList.add("hidden");
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function restartGame() {
+  Object.keys(state).forEach((key) => {
+    state[key] = null;
+  });
+  currentStep = 0;
+  battleReport.innerHTML = "";
+  renderStep();
+  showSelectionScreen();
 }
 
 async function showResult() {
@@ -550,9 +790,39 @@ function closeModal() {
   apiModal.classList.add("hidden");
 }
 
+function openResourcePanel(panel) {
+  panel.classList.remove("hidden");
+}
+
+function closeResourcePanels() {
+  museumPanel.classList.add("hidden");
+  historyPanel.classList.add("hidden");
+}
+
+function renderHistoryPeriod(periodKey) {
+  const period = historyPeriods[periodKey] || historyPeriods.origin;
+  historyTabs.querySelectorAll(".history-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.period === periodKey);
+  });
+  historyDetail.innerHTML = `
+    <p class="history-era">${period.era}</p>
+    <h3>${period.title}</h3>
+    <p>${period.text}</p>
+    <ul>
+      ${period.points.map((point) => `<li>${point}</li>`).join("")}
+    </ul>
+  `;
+  historyNote.innerHTML = `
+    <span>${period.clueType}</span>
+    <strong>${period.clueTitle}</strong>
+    <p>${period.clueText}</p>
+  `;
+}
+
 prevButton.addEventListener("click", () => {
   if (currentStep > 0) {
     currentStep -= 1;
+    shouldAnimateStep = true;
     renderStep();
   }
 });
@@ -562,15 +832,29 @@ nextButton.addEventListener("click", () => {
   if (!state[step.key]) return;
   if (currentStep < steps.length - 1) {
     currentStep += 1;
+    shouldAnimateStep = true;
     renderStep();
   }
 });
 
 resultButton.addEventListener("click", showResult);
 backButton.addEventListener("click", showSelectionScreen);
+restartButton.addEventListener("click", restartGame);
 closeApiModal.addEventListener("click", closeModal);
 apiModal.addEventListener("click", (event) => {
   if (event.target === apiModal) closeModal();
+});
+openMuseumMap.addEventListener("click", () => openResourcePanel(museumPanel));
+openHistoryExplorer.addEventListener("click", () => {
+  renderHistoryPeriod("origin");
+  openResourcePanel(historyPanel);
+});
+closeMuseumPanel.addEventListener("click", closeResourcePanels);
+closeHistoryPanel.addEventListener("click", closeResourcePanels);
+historyTabs.addEventListener("click", (event) => {
+  const tab = event.target.closest(".history-tab");
+  if (!tab) return;
+  renderHistoryPeriod(tab.dataset.period);
 });
 
 document.addEventListener("keydown", (event) => {
@@ -580,6 +864,7 @@ document.addEventListener("keydown", (event) => {
   }
   if (event.key === "Escape") {
     closeModal();
+    closeResourcePanels();
   }
 });
 

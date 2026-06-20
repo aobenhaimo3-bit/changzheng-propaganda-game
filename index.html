@@ -22,12 +22,20 @@
         你将扮演“红军宣传员”，沿着五个长征宣传节点逐步完成部署。每一页只能选择一个策略，
         完成当前节点后才能进入下一节点。最终系统会生成宣传评估战报，给出分数、等级、剧情反馈和 AI 建议。
       </p>
+      <div class="resource-actions">
+        <button class="resource-button" id="openHistoryExplorer" type="button">标语历史探秘</button>
+        <button class="resource-button" id="openMuseumMap" type="button">北京观展地图</button>
+      </div>
     </section>
 
     <section class="wizard-screen" id="selectionScreen" aria-label="逐页宣传策略选择">
       <aside class="campaign-map" aria-label="长征宣传节点进度">
         <p class="report-kicker">长征宣传路线</p>
         <ol class="route-list" id="routeList"></ol>
+        <div class="host-panel">
+          <h3>课堂互动玩法</h3>
+          <p>先由全班投票完成一轮，再把链接发给同学自由体验，对比不同策略的战报差异。</p>
+        </div>
       </aside>
 
       <section class="wizard-card">
@@ -46,6 +54,7 @@
 
         <h2 id="stepTitle">选择长征情境</h2>
         <p class="step-desc" id="stepDescription"></p>
+        <div class="selection-recap" id="selectedSummary" aria-label="当前已选策略"></div>
         <div class="option-grid" id="stepOptions"></div>
 
         <div class="wizard-actions">
@@ -59,9 +68,98 @@
     <section class="result-screen hidden" id="resultScreen" aria-live="polite">
       <div class="result-topline">
         <p class="report-kicker">宣传评估报告</p>
-        <button class="secondary-button small-button" id="backButton" type="button">返回修改策略</button>
+        <div class="result-actions">
+          <button class="secondary-button small-button" id="backButton" type="button">返回修改策略</button>
+          <button class="primary-button small-button" id="restartButton" type="button">一键重来</button>
+        </div>
       </div>
       <section class="battle-report" id="battleReport"></section>
+    </section>
+
+    <section class="museum-panel hidden" id="museumPanel" aria-labelledby="museum-title">
+      <button class="panel-close" id="closeMuseumPanel" type="button" aria-label="关闭北京观展地图">×</button>
+      <div class="section-heading">
+        <p class="report-kicker">走出屏幕 · 去现场看宣传材料</p>
+        <h2 id="museum-title">北京红色展览地图</h2>
+        <p>
+          建议同学们课后到北京的革命史、党史和近现代史展馆实地观察标语、口号、布告、漫画、传单等宣传材料，
+          看它们如何在真实历史场景中发挥动员和传播作用。
+        </p>
+      </div>
+
+      <div class="museum-layout">
+        <div class="beijing-map" aria-label="北京红色展览示意地图">
+          <div class="map-road horizontal"></div>
+          <div class="map-road vertical"></div>
+          <a class="map-pin pin-party" href="https://uri.amap.com/search?keyword=中国共产党历史展览馆" target="_blank" rel="noopener">党史馆</a>
+          <a class="map-pin pin-nmc" href="https://uri.amap.com/search?keyword=中国国家博物馆" target="_blank" rel="noopener">国博</a>
+          <a class="map-pin pin-military" href="https://uri.amap.com/search?keyword=中国人民革命军事博物馆" target="_blank" rel="noopener">军博</a>
+          <a class="map-pin pin-red" href="https://uri.amap.com/search?keyword=北京新文化运动纪念馆" target="_blank" rel="noopener">红楼</a>
+          <span class="map-label label-north">北部：奥林匹克公园</span>
+          <span class="map-label label-center">中轴线与长安街</span>
+          <span class="map-label label-west">西部：复兴路</span>
+        </div>
+
+        <div class="museum-list">
+          <article class="museum-card">
+            <h3>中国共产党历史展览馆</h3>
+            <p>适合看党史叙事中的宣传口号、革命图像和政治动员表达。</p>
+            <a href="https://uri.amap.com/search?keyword=中国共产党历史展览馆" target="_blank" rel="noopener">打开地图</a>
+          </article>
+          <article class="museum-card">
+            <h3>中国人民革命军事博物馆</h3>
+            <p>适合结合土地革命、长征、抗战等军事史展陈观察宣传与战场动员。</p>
+            <a href="https://uri.amap.com/search?keyword=中国人民革命军事博物馆" target="_blank" rel="noopener">打开地图</a>
+          </article>
+          <article class="museum-card">
+            <h3>中国国家博物馆</h3>
+            <p>可在“复兴之路”等近现代史展陈中理解宣传材料与民族复兴叙事。</p>
+            <a href="https://uri.amap.com/search?keyword=中国国家博物馆" target="_blank" rel="noopener">打开地图</a>
+          </article>
+          <article class="museum-card">
+            <h3>北京新文化运动纪念馆</h3>
+            <p>适合追溯文字、报刊、口号与思想传播之间的关系。</p>
+            <a href="https://uri.amap.com/search?keyword=北京新文化运动纪念馆" target="_blank" rel="noopener">打开地图</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="history-panel hidden" id="historyPanel" aria-labelledby="history-title">
+      <button class="panel-close" id="closeHistoryPanel" type="button" aria-label="关闭标语历史探秘">×</button>
+      <div class="section-heading">
+        <p class="report-kicker">知识补充</p>
+        <h2 id="history-title">标语历史探秘</h2>
+        <p>
+          标语不是简单的“墙上文字”，而是一种低成本、高密度、易传播的公共表达方式。
+          点击下面的时期卡片，看看它如何从报刊宣言、墙体标语，发展为长征中的攻心宣传工具。
+        </p>
+      </div>
+
+      <div class="history-tabs" id="historyTabs">
+        <button class="history-tab active" type="button" data-period="origin">近代传播源头</button>
+        <button class="history-tab" type="button" data-period="soviet">苏区与红军宣传</button>
+        <button class="history-tab" type="button" data-period="march">长征攻心战</button>
+        <button class="history-tab" type="button" data-period="visual">多模态传播</button>
+        <button class="history-tab" type="button" data-period="museum">今天如何观看</button>
+      </div>
+
+      <article class="history-detail" id="historyDetail">
+        <p class="history-era">近代传播源头</p>
+        <h3>从宣言、报刊到街头口号</h3>
+        <p>
+          近代中国政治传播常依靠报刊、宣言、传单和集会口号扩散。它们把复杂的政治主张压缩成可阅读、可呼喊、可复制的短句，
+          让更多人能在学校、工厂、街道和乡村接触新思想。标语正是在这种公共传播环境中逐渐成为群众动员工具。
+        </p>
+        <ul>
+          <li>关键词：报刊、宣言、传单、集会口号</li>
+          <li>观察点：一句话如何压缩复杂政治主张</li>
+        </ul>
+      </article>
+
+      <div class="history-note" id="historyNote">
+        参考线索：党史展陈、国博“复兴之路”、军博革命战争陈列，以及红军长征沿线保存的墙体标语实例。
+      </div>
     </section>
 
     <section class="knowledge-panel" id="knowledgePanel" aria-labelledby="knowledge-title">
